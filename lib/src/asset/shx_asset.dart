@@ -16,9 +16,9 @@ class ShxAsset {
 
   /// The SHx asset descriptor, ready to use in any Stellar operation.
   static Asset get asset => Asset.createNonNativeAsset(
-        StrongholdConstants.shxAssetCode,
-        StrongholdConstants.shxIssuerAccountId,
-      );
+    StrongholdConstants.shxAssetCode,
+    StrongholdConstants.shxIssuerAccountId,
+  );
 }
 
 // ---- Trustlines ----
@@ -32,7 +32,10 @@ class ShxTrustline {
   /// Builds a ChangeTrust operation authorizing the source account to hold
   /// SHx, up to [limit] (defaults to the SDK's maximum representable amount).
   static ChangeTrustOperationBuilder buildEstablishOperation({String? limit}) {
-    return ChangeTrustOperationBuilder(ShxAsset.asset, limit ?? ChangeTrustOperationBuilder.MAX_LIMIT);
+    return ChangeTrustOperationBuilder(
+      ShxAsset.asset,
+      limit ?? ChangeTrustOperationBuilder.MAX_LIMIT,
+    );
   }
 
   /// Builds a ChangeTrust operation removing the trustline (limit = "0").
@@ -53,7 +56,11 @@ class ShxPayment {
     required String destinationAccountId,
     required String amount,
   }) {
-    return PaymentOperationBuilder(destinationAccountId, ShxAsset.asset, amount);
+    return PaymentOperationBuilder(
+      destinationAccountId,
+      ShxAsset.asset,
+      amount,
+    );
   }
 
   // TODO(Phase 1): add buildPathPaymentOperation wrapping

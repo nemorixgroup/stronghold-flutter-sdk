@@ -3,7 +3,7 @@
 /// A composition layer on top of `stellar_flutter_sdk`, not a fork. See
 /// the Stronghold/SHx Knowledge Base (Module 06) for the full architecture
 /// rationale.
-library stronghold_flutter_sdk;
+library;
 
 export 'src/core/stronghold_network.dart';
 export 'src/core/stronghold_exception.dart';

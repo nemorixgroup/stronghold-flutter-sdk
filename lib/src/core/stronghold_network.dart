@@ -52,7 +52,8 @@ class StrongholdEndpoints {
   StrongholdEndpoints._();
 
   static const String testnetHorizonUrl = 'https://horizon-testnet.stellar.org';
-  static const String testnetSorobanRpcUrl = 'https://soroban-testnet.stellar.org';
+  static const String testnetSorobanRpcUrl =
+      'https://soroban-testnet.stellar.org';
 
   static const String mainnetHorizonUrl = 'https://horizon.stellar.org';
 
@@ -60,6 +61,7 @@ class StrongholdEndpoints {
   /// URL when constructing a client for [StrongholdNetwork.mainnet].
   static const String? mainnetSorobanRpcUrl = null;
 
-  static const String mainnetPassphrase = 'Public Global Stellar Network ; September 2015';
+  static const String mainnetPassphrase =
+      'Public Global Stellar Network ; September 2015';
   static const String testnetPassphrase = 'Test SDF Network ; September 2015';
 }

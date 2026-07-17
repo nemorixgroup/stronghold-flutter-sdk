@@ -66,7 +66,9 @@ class ShxEscrowClient {
     final client = await _getClient();
     final ContractSpec spec = client.getContractSpec();
 
-    final XdrSCSpecTypeDef dataKeyDef = XdrSCSpecTypeDef.forUdt(XdrSCSpecTypeUDT('DataKey'));
+    final XdrSCSpecTypeDef dataKeyDef = XdrSCSpecTypeDef.forUdt(
+      XdrSCSpecTypeUDT('DataKey'),
+    );
     final XdrSCVal key = spec.nativeToXdrSCVal(
       NativeUnionVal('Escrow', values: [accountId]),
       dataKeyDef,
@@ -110,7 +112,10 @@ class ShxEscrowClient {
     return EscrowedBalance(
       accountId: accountId,
       amount: amount,
-      claimAfter: DateTime.fromMillisecondsSinceEpoch(claimAfterSeconds * 1000, isUtc: true),
+      claimAfter: DateTime.fromMillisecondsSinceEpoch(
+        claimAfterSeconds * 1000,
+        isUtc: true,
+      ),
     );
   }
 
@@ -185,19 +190,34 @@ class ShxEscrowClient {
   StrongholdException _mapEscrowError(Object error) {
     final String message = error.toString();
     if (message.contains('ClaimAfterInPast')) {
-      return const EscrowException(EscrowErrorCode.claimAfterInPast, 'claim_after is in the past');
+      return const EscrowException(
+        EscrowErrorCode.claimAfterInPast,
+        'claim_after is in the past',
+      );
     }
     if (message.contains('LockupTooLong')) {
-      return const EscrowException(EscrowErrorCode.lockupTooLong, 'Requested lockup exceeds max_lockup_duration');
+      return const EscrowException(
+        EscrowErrorCode.lockupTooLong,
+        'Requested lockup exceeds max_lockup_duration',
+      );
     }
     if (message.contains('TooEarlyToUnlock')) {
-      return const EscrowException(EscrowErrorCode.tooEarlyToUnlock, 'claim_after has not passed yet');
+      return const EscrowException(
+        EscrowErrorCode.tooEarlyToUnlock,
+        'claim_after has not passed yet',
+      );
     }
     if (message.contains('EscrowNotFound')) {
-      return const EscrowException(EscrowErrorCode.escrowNotFound, 'No escrow entry for this account');
+      return const EscrowException(
+        EscrowErrorCode.escrowNotFound,
+        'No escrow entry for this account',
+      );
     }
     if (message.contains('EscrowAlreadyExists')) {
-      return const EscrowException(EscrowErrorCode.escrowAlreadyExists, 'An escrow entry already exists for this account');
+      return const EscrowException(
+        EscrowErrorCode.escrowAlreadyExists,
+        'An escrow entry already exists for this account',
+      );
     }
     return StrongholdException('Escrow call failed: $message');
   }
