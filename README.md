@@ -1,33 +1,99 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Dart](https://img.shields.io/badge/Dart-3.x-blue.svg)](https://dart.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-blue.svg)](https://flutter.dev)
+[![CI](https://github.com/nemorixgroup/stronghold-flutter-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/nemorixgroup/stronghold-flutter-sdk/actions)
+[![Status](https://img.shields.io/badge/Status-Phase%201%20In%20Progress-red.svg)](https://github.com/nemorixgroup/stronghold-flutter-sdk/blob/main)
+
+**English** | [Español](https://github.com/nemorixgroup/stronghold-flutter-sdk/blob/main/README.es.md)
+
 # stronghold_flutter_sdk
 
-Native Flutter/Dart SDK for the SHx token ecosystem on Stellar: SHx asset operations (trustlines, payments), ManageData-based governance voting, and bindings for Stronghold's on-chain 60B SHx escrow contract.
+Native Flutter/Dart SDK for the SHx token ecosystem on Stellar.
+Composition layer over `stellar_flutter_sdk`, not a fork · MIT · pub.dev
 
-> SHx does not have its own blockchain. It is an asset issued on Stellar. This SDK is a composition layer on top of [`stellar_flutter_sdk`](https://github.com/Soneso/stellar_flutter_sdk) (Soneso, MIT), not a fork. See the [Stronghold/SHx Knowledge Base](https://github.com/nemorixgroup/Stronghold-Knowledge-Base) for the full technical background and architecture rationale.
+> **Status: Early Development.** API is not stable.
+> Current phase: Phase 1 - Architecture & Core Setup.
 
-## Status
+SHx does not have its own blockchain: it is an asset issued on Stellar. This
+SDK adds SHx-specific asset operations, ManageData-based governance voting,
+and bindings for Stronghold's on-chain escrow contract, on top of the
+actively-maintained `stellar_flutter_sdk`.
 
-Phase 1 (architecture scaffold), in progress. Method signatures for asset and governance operations are defined; escrow contract invocation and the read-path for votes and escrow lookups are pending implementation and testing against Testnet.
+## Roadmap (v1.0.0)
 
-| Module | Status |
-|---|---|
-| Core network config / constants | Done |
-| SHx asset (trustline, payment) | Scaffolded, pending test coverage |
-| Governance (ManageData voting) | Scaffolded, pending test coverage |
-| Escrow contract client | Scaffolded, invocation logic pending (Phase 2) |
-| Path payments | Pending |
-| Example app | Pending |
+| Phase | Focus                                             | Version     | Status         |
+|-------|----------------------------------------------------|-------------|----------------|
+| 1     | Architecture & core setup                          | `0.0.1-dev` | 🔄 In progress |
+| 2     | SHx asset operations (trustline, payment, path payment) | `0.1.0-dev` | ⏳ Planned |
+| 3     | Governance (ManageData voting)                     | `0.2.0-dev` | ⏳ Planned     |
+| 4     | Escrow contract client (60B SHx lock/unlock)        | `0.3.0-dev` | ⏳ Planned     |
+| 5     | Docs, testing & pub.dev v1.0                        | `1.0.0`     | ⏳ Planned     |
 
-## Why depend on stellar_flutter_sdk instead of forking it
+Full roadmap with tasks and milestones: see [ROADMAP.md](ROADMAP.md).
 
-Forking would mean re-doing maintenance that Soneso already does, funded by the Stellar Public Goods Program: protocol updates, XDR changes, Soroban RPC changes. This SDK depends on it as a normal pub.dev package and adds only what is SHx-specific: asset constants, trustline/payment helpers, the governance voting format, and the escrow contract bindings. See Module 06 of the Knowledge Base for the full reasoning.
+## Documentation & Knowledge Base
 
-## Verified on-chain facts this SDK is built against
+This SDK is built on top of the [Stronghold/SHx Knowledge Base](https://github.com/nemorixgroup/Stronghold-Knowledge-Base), covering the SHx token, governance mechanics, the escrow contract, and StrongholdNET. Recommended reading before diving into the SDK internals.
 
-- SHx asset: `SHX` issued by `GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH`, 7 decimals.
-- Governance voting uses classic `ManageData` operations, not a Soroban contract.
-- The documented "SHx Soroban Contract ID" (`CCKCKCPHYVXQD4NECBFJTFSCU2AMSJGCNG4O6K4JVRE2BLPR7WNDBQIQ`) is the auto-generated Stellar Asset Contract (SAC), a standard SEP-41 wrapper, not custom governance logic.
-- The 60B SHx escrow contract (`CCA5HAZCPEYXD7JBKAJCVUZUXAK7V5ZFU3QMJO33OJH2OHL3OGLS2P7M`) exposes `lock`, `unlock`, and `extend_ttl`; its spec was pulled directly via `stellar contract inspect` against Mainnet.
+## Installation
+
+```yaml
+# pubspec.yaml
+dependencies:
+  stronghold_flutter_sdk: ^0.0.1-dev
+```
+
+```yaml
+flutter pub get
+```
+
+## Quick Start
+
+> The public API is being built incrementally. This section will be
+> updated as each phase lands. See the Roadmap table above for current
+> status.
+
+## Networks
+
+| Network | Horizon URL | Soroban RPC |
+|---|---|---|
+| Mainnet | `https://horizon.stellar.org` | No official public RPC, bring your own provider |
+| Testnet | `https://horizon-testnet.stellar.org` | `https://soroban-testnet.stellar.org` |
+
+## Contributing
+
+The SDK is not ready for external contributions yet.
+Follow this repository for updates; contributions will
+be welcome starting with v1.0.0.
+
+See [CONTRIBUTING.md](https://github.com/nemorixgroup/stronghold-flutter-sdk/blob/main/CONTRIBUTING.md) for future guidelines.
 
 ## License
 
-MIT
+Licensed under [MIT](https://github.com/nemorixgroup/stronghold-flutter-sdk/blob/main/LICENSE).
+
+## For LATAM developers
+
+This SDK is being developed with native support for the region in mind:
+
+- Bilingual documentation (English / Spanish) from the very first module.
+- Part of Nemorix Group's SDK ecosystem for financial infrastructure
+in LATAM (Hedera, Avalanche, XRPL, Stellar, Stronghold).
+- Developed by [Nemorix Group](https://nemorixpay.com), Ohio, USA.
+
+Follow us for updates: **<sdks@nemorixpay.com>**
+
+## Support This Project
+
+If this SDK is useful to you or your team, consider supporting its
+development. Every contribution helps cover infrastructure,
+documentation, and the time invested in building and maintaining this
+open source tool for the SHx and Flutter community. Thank you!
+
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support-FFDD00?logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/nemorixgroupllc)
+[![Sponsor](https://img.shields.io/badge/Sponsor-GitHub-EA4AAA?logo=github-sponsors&logoColor=white)](https://github.com/sponsors/nemorixgroup)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/nemorixgroupllc)
+
+---
+
+Built by [Nemorix Group](https://nemorixpay.com) · MIT
