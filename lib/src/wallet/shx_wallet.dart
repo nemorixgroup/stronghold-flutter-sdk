@@ -66,4 +66,64 @@ class ShxWallet {
     }
     return account.copyWith(status: ShxAccountStatus.funded);
   }
+
+  // ---- Create + Fund (Mainnet) ----
+
+  /// Creates and funds [account] on Mainnet (or any network reachable
+  /// via [sdk]), using [fundingSourceKeyPair] as the paying account.
+  ///
+  /// Unlike [fundOnTestnet], there is no faucet on a live network: the
+  /// starting balance has to come from somewhere real, so the caller
+  /// supplies the funding keypair explicitly. This SDK does not manage
+  /// or assume any financing plan (treasury account, user purchase,
+  /// exchange withdrawal); it only builds and submits the
+  /// CreateAccountOperation once the caller has decided where the XLM
+  /// comes from.
+  ///
+  /// [startingBalance] should account for Stellar's minimum balance
+  /// reserve plus any trustlines the account will open afterward (each
+  /// trustline adds its own reserve requirement); this SDK does not
+  /// pick a default, since that number depends on what the account will
+  /// be used for.
+  ///
+  /// See: https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/accounts#creating-an-account
+  ///
+  /// Throws [StrongholdException] if the transaction is not accepted by
+  /// the network.
+  static Future<ShxAccount> createAndFund({
+    required ShxAccount account,
+    required StellarSDK sdk,
+    required Network network,
+    required KeyPair fundingSourceKeyPair,
+    required String startingBalance,
+  }) async {
+    // Load the funding account's current sequence number from Horizon.
+    final fundingAccount = await sdk.accounts.account(
+      fundingSourceKeyPair.accountId,
+    );
+
+    // Build the operation that creates and funds the new account.
+    final createAccountOp = CreateAccountOperationBuilder(
+      account.accountId,
+      startingBalance,
+    ).build();
+
+    // Build the transaction with the funding account as source, and sign it.
+    final transaction =
+        TransactionBuilder(
+            fundingAccount,
+          ).addOperation(createAccountOp).build()
+          ..sign(fundingSourceKeyPair, network);
+
+    // Submit to the network and confirm it was accepted.
+    final response = await sdk.submitTransaction(transaction);
+    if (!response.success) {
+      throw const StrongholdException(
+        'Failed to create and fund account on Mainnet',
+      );
+    }
+
+    // Only now can the account be considered funded.
+    return account.copyWith(status: ShxAccountStatus.funded);
+  }
 }
