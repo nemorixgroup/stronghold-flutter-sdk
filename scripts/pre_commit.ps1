@@ -32,8 +32,8 @@ Write-Host "Analyze: OK" -ForegroundColor Green
 
 # ---- Section 3: Test ----
 Write-Host ""
-Write-Host "[3/3] flutter test" -ForegroundColor Yellow
-flutter test
+Write-Host "[3/3] flutter test --exclude-tags=integration" -ForegroundColor Yellow
+flutter test --exclude-tags=integration
 if ($LASTEXITCODE -ne 0) {
     Write-Host "FAILED: Tests failed." -ForegroundColor Red
     exit 1

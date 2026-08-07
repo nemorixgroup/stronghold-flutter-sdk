@@ -11,3 +11,7 @@ export 'src/core/stronghold_network.dart';
 export 'src/escrow/escrow_client.dart';
 export 'src/escrow/escrow_models.dart';
 export 'src/governance/shx_vote.dart';
+
+// -- wallet --
+export 'src/wallet/shx_account.dart';
+export 'src/wallet/shx_wallet.dart';
