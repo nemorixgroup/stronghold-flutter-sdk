@@ -6,6 +6,7 @@ library;
 // pure unit tests in shx_wallet_test.dart for that reason.
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:stronghold_flutter_sdk/src/wallet/shx_account.dart';
 import 'package:stronghold_flutter_sdk/src/wallet/shx_wallet.dart';
 
@@ -43,6 +44,33 @@ void main() {
         );
       },
       skip: 'Needs a reliable way to force a Friendbot failure; see note',
+    );
+  });
+
+  group('ShxWallet.createAndFund', () {
+    test(
+      'creates and funds a new account using a Testnet funding source',
+      () async {
+        // Funding source: a Testnet account funded via Friendbot, reusing
+        // fundOnTestnet so this test doesn't depend on any hardcoded
+        // pre-funded account.
+        final fundingSource = await ShxWallet.fundOnTestnet(
+          ShxWallet.createPending(),
+        );
+
+        final target = ShxWallet.createPending();
+
+        final result = await ShxWallet.createAndFund(
+          account: target,
+          sdk: StellarSDK.TESTNET,
+          network: Network.TESTNET,
+          fundingSourceKeyPair: fundingSource.keyPair,
+          startingBalance: '5',
+        );
+
+        expect(result.status, ShxAccountStatus.funded);
+        expect(result.accountId, target.accountId);
+      },
     );
   });
 }
