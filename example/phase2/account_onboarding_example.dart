@@ -1,7 +1,7 @@
 // Demonstrates the account onboarding flow available as of 0.0.3-dev:
 // generating an identity and funding it on Testnet.
 //
-// Run with: 
+// Run with:
 // ```sh
 // dart run example/phase2/account_onboarding_example.dart
 // ```

@@ -1,7 +1,7 @@
-# stronghold_flutter_sdk example
+// # stronghold_flutter_sdk example
 
-Working examples for `stronghold_flutter_sdk`, added incrementally as each
-phase of the ShX Roadmap.
+// Working examples for `stronghold_flutter_sdk`, added incrementally as each
+// phase of the ShX Roadmap.
 
 // stronghold_flutter_sdk - Quick Start Examples
 //
@@ -20,18 +20,18 @@ phase of the ShX Roadmap.
 // GitHub:
 // https://github.com/nemorixgroup/stronghold-flutter-sdk/blob/master/example/stronghold_flutter_sdk_example.dart
 
-## Available examples
+// ## Available examples
 
-| Phase | Example | Demonstrates |
-|---|---|---|
-| 2 | [`account_onboarding_example.dart`](phase2/account_onboarding_example.dart) | Generate an identity and fund it on Testnet |
-
-## Planned examples
-
-| Phase | Example | Status |
-|---|---|---|
-| 2 | `mainnet_account_creation.dart`, create and fund an account on Mainnet with a funding source | ⏳ Pending |
-| 2 | `trustline_and_payment.dart`, establish a SHx trustline and send a payment | ⏳ Pending |
-| 3 | `governance_vote.dart`, cast and read back a governance vote | ⏳ Pending |
-| 4 | `escrow_lock_unlock.dart`, lock, read, and unlock a SHx escrow | ⏳ Pending |
-| 5 | `bridge_status_tracking.dart`, check the status of a cross-chain SHx transfer (Ethereum, XRP Ledger, Solana) | ⏳ Pending |
+// | Phase | Example | Demonstrates |
+// |---|---|---|
+// | 2 | [`account_onboarding_example.dart`](phase2/account_onboarding_example.dart) | Generate an identity and fund it on Testnet |
+//
+// ## Planned examples
+//
+// | Phase | Example | Status |
+// |---|---|---|
+// | 2 | `mainnet_account_creation.dart`, create and fund an account on Mainnet with a funding source | ⏳ Pending |
+// | 2 | `trustline_and_payment.dart`, establish a SHx trustline and send a payment | ⏳ Pending |
+// | 3 | `governance_vote.dart`, cast and read back a governance vote | ⏳ Pending |
+// | 4 | `escrow_lock_unlock.dart`, lock, read, and unlock a SHx escrow | ⏳ Pending |
+// | 5 | `bridge_status_tracking.dart`, check the status of a cross-chain SHx transfer (Ethereum, XRP Ledger, Solana) | ⏳ Pending |
