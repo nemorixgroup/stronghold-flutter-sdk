@@ -2,7 +2,7 @@ name: stronghold_flutter_sdk
 description: >
   Native Flutter/Dart SDK for the SHx token ecosystem on Stellar. SHx
   asset operations, governance voting, and escrow contract bindings.
-version: 0.0.1-dev
+version: 0.0.3-dev
 homepage: https://github.com/nemorixgroup/stronghold-flutter-sdk
 repository: https://github.com/nemorixgroup/stronghold-flutter-sdk
 issue_tracker: https://github.com/nemorixgroup/stronghold-flutter-sdk/issues
