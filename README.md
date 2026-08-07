@@ -2,7 +2,7 @@
 [![Dart](https://img.shields.io/badge/Dart-3.x-blue.svg)](https://dart.dev)
 [![Flutter](https://img.shields.io/badge/Flutter-3.x-blue.svg)](https://flutter.dev)
 [![CI](https://github.com/nemorixgroup/stronghold-flutter-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/nemorixgroup/stronghold-flutter-sdk/actions)
-[![Status](https://img.shields.io/badge/Status-Phase%201%20In%20Progress-red.svg)](https://github.com/nemorixgroup/stronghold-flutter-sdk/blob/main)
+[![Status](https://img.shields.io/badge/Status-Phase%202%20In%20Progress-red.svg)](https://github.com/nemorixgroup/stronghold-flutter-sdk/blob/main)
 
 **English** | [Español](https://github.com/nemorixgroup/stronghold-flutter-sdk/blob/main/README.es.md)
 
@@ -12,7 +12,7 @@ Native Flutter/Dart SDK for the SHx token ecosystem on Stellar.
 Composition layer over `stellar_flutter_sdk`, not a fork · MIT · pub.dev
 
 > **Status: Early Development.** API is not stable.
-> Current phase: Phase 1 - Architecture & Core Setup.
+> Current phase: Phase 2 - SHx asset operations.
 
 SHx does not have its own blockchain: it is an asset issued on Stellar. This
 SDK adds SHx-specific asset operations, ManageData-based governance voting,
@@ -23,11 +23,12 @@ actively-maintained `stellar_flutter_sdk`.
 
 | Phase | Focus                                             | Version     | Status         |
 |-------|----------------------------------------------------|-------------|----------------|
-| 1     | Architecture & core setup                          | `0.0.1-dev` | 🔄 In progress |
-| 2     | SHx asset operations (trustline, payment, path payment) | `0.1.0-dev` | ⏳ Planned |
+| 1     | Architecture & core setup                          | `0.0.1-dev` | ✅ Done |
+| 2     | SHx asset operations (trustline, payment, path payment) | `0.1.0-dev` | 🔄 In progress |
 | 3     | Governance (ManageData voting)                     | `0.2.0-dev` | ⏳ Planned     |
 | 4     | Escrow contract client (60B SHx lock/unlock)        | `0.3.0-dev` | ⏳ Planned     |
-| 5     | Docs, testing & pub.dev v1.0                        | `1.0.0`     | ⏳ Planned     |
+| 5     | Bridge Status & Tracking        | `0.4.0-dev` | ⏳ Planned     |
+| 6     | Docs, testing & pub.dev v1.0                        | `1.0.0`     | ⏳ Planned     |
 
 Full roadmap with tasks and milestones: see [ROADMAP.md](ROADMAP.md).
 
@@ -35,12 +36,16 @@ Full roadmap with tasks and milestones: see [ROADMAP.md](ROADMAP.md).
 
 This SDK is built on top of the [Stronghold/SHx Knowledge Base](https://github.com/nemorixgroup/Stronghold-Knowledge-Base), covering the SHx token, governance mechanics, the escrow contract, and StrongholdNET. Recommended reading before diving into the SDK internals.
 
+Every implementation decision behind this SDK - library choices,
+encoding standards, verification against official specs - is
+documented in [docs-sdk/](https://github.com/nemorixgroup/Stronghold-Knowledge-Base/tree/main/docs-sdk).
+
 ## Installation
 
 ```yaml
 # pubspec.yaml
 dependencies:
-  stronghold_flutter_sdk: ^0.0.1-dev
+  stronghold_flutter_sdk: ^0.0.3-dev
 ```
 
 ```yaml
@@ -49,9 +54,33 @@ flutter pub get
 
 ## Quick Start
 
-> The public API is being built incrementally. This section will be
-> updated as each phase lands. See the Roadmap table above for current
-> status.
+Available today: generating an identity and funding it on Testnet, free, no real XLM required.
+
+```dart
+import 'package:stronghold_flutter_sdk/stronghold_flutter_sdk.dart';
+
+Future<void> main() async {
+  // Generate a new identity and fund it on Testnet via Friendbot.
+  final account = await ShxWallet.fundOnTestnet(ShxWallet.createPending());
+
+  print('New Testnet account: ${account.accountId}');
+  print('Status: ${account.status}'); // ShxAccountStatus.funded
+}
+```
+
+Creating and funding an account on Mainnet follows the same pattern, but requires a funding source with real XLM:
+
+```dart
+final account = await ShxWallet.createAndFund(
+  account: ShxWallet.createPending(),
+  sdk: StellarSDK.PUBLIC,
+  network: Network.PUBLIC,
+  fundingSourceKeyPair: myFundingKeyPair,
+  startingBalance: '5',
+);
+```
+
+SHx trustlines, payments, and governance voting are next on the roadmap. See the [Roadmap](#roadmap-v100) table above for current status.
 
 ## Networks
 
