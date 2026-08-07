@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.0.3-dev
+
+### Added
+
+- `ShxAccount`, `ShxAccountStatus`: domain model tracking an account
+  through its onboarding lifecycle (pending, funded, shxReady)
+- `ShxWallet.generate()`, `ShxWallet.createPending()`: keypair
+  generation, no network call
+- `ShxWallet.fundOnTestnet()`: funds an account via Friendbot
+- `ShxWallet.createAndFund()`: creates and funds an account on
+  Mainnet (or any network reachable via a caller-supplied
+  `StellarSDK`), using a caller-supplied funding source `KeyPair`
+- Integration test tagging (`@Tags(['integration'])`) and
+  `scripts/test_integration.ps1`, so real-network tests run
+  separately from the fast pre-commit gate
+
+### Design Decisions
+
+- `sdk` and `network` are passed as explicit separate parameters in
+  `createAndFund()` rather than derived from one another, matching
+  the idiomatic pattern used in Soneso's own official example app
+- The Mainnet funding source `KeyPair` is a caller-supplied
+  parameter; the SDK does not manage or assume any financing plan
+- Tests that touch real networks live in separate
+  `_integration_test.dart` files, excluded from the default
+  `flutter test` run in the pre-commit gate
+
+### Status
+
+Phase 2 in progress. Identity, Testnet funding, and Mainnet
+create+fund are implemented and verified (unit and integration tests
+passing).  
+Next: SHx trustline integration into the `ShxAccount` lifecycle
+(`funded` -> `shxReady`).
+
 ## 0.0.1-dev
 
 Phase 1 in progress: architecture scaffold complete, escrow contract
