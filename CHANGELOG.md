@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.0.4-dev
+
+### Added
+
+- `ShxWallet.establishShxTrustline()`: opens a trustline toward the
+  real SHx issuer, completing the `funded` -> `shxReady` transition
+- `test/src/asset/shx_asset_test.dart`: unit tests verifying
+  `ShxTrustline` builds the correct asset, issuer, and limits
+
+### Design Decisions
+
+- `establishShxTrustline()` is self-authorized by the account being
+  upgraded (no separate funding source parameter), unlike
+  `createAndFund()`, since the account pays for its own trustline
+  reserve out of its existing balance
+- The real SHx issuer only exists on Mainnet; any operation
+  referencing it fails on Testnet with `op_no_issuer`. This is the
+  first method in the SDK that cannot be end-to-end tested on
+  Testnet, since every prior method only touched asset-agnostic
+  native XLM. Full integration testing is deferred until a funded
+  Mainnet test account is available; unit tests cover operation
+  construction in the meantime
+
+### Status
+
+Phase 2 in progress. Identity, Testnet/Mainnet funding, and SHx
+trustline are implemented and verified.  
+Next: balance queries (`getXlmBalance`, `getShxBalance`) or payment
+integration.  
+
 ## 0.0.3-dev
 
 ### Added
