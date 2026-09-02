@@ -73,4 +73,28 @@ void main() {
       },
     );
   });
+
+  // TrustLine
+  group('ShxWallet.establishShxTrustline', () {
+    test(
+      'opens a trustline and marks the account as shxReady',
+      () async {
+        final funded = await ShxWallet.fundOnTestnet(ShxWallet.createPending());
+
+        final ready = await ShxWallet.establishShxTrustline(
+          account: funded,
+          sdk: StellarSDK.TESTNET,
+          network: Network.TESTNET,
+        );
+
+        expect(ready.status, ShxAccountStatus.shxReady);
+        expect(ready.accountId, funded.accountId);
+      },
+      skip:
+          'The real SHx issuer only exists on Mainnet (op_no_issuer on '
+          'Testnet). Requires a funded Mainnet test account; deferred until '
+          'one is available. See ShxTrustline unit tests for construction - '
+          'level coverage in the meantime.',
+    );
+  });
 }
