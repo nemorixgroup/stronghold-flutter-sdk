@@ -45,7 +45,7 @@ documented in [docs-sdk/](https://github.com/nemorixgroup/Stronghold-Knowledge-B
 ```yaml
 # pubspec.yaml
 dependencies:
-  stronghold_flutter_sdk: ^0.0.3-dev
+  stronghold_flutter_sdk: ^0.0.4-dev
 ```
 
 ```yaml
@@ -78,6 +78,17 @@ final account = await ShxWallet.createAndFund(
   fundingSourceKeyPair: myFundingKeyPair,
   startingBalance: '5',
 );
+```
+
+Once funded, an account needs a trustline before it can hold SHx (this only works on Mainnet, since the real SHx issuer does not exist on Testnet):
+
+```dart
+final ready = await ShxWallet.establishShxTrustline(
+  account: myFundedAccount,
+  sdk: StellarSDK.PUBLIC,
+  network: Network.PUBLIC,
+);
+// ready.status == ShxAccountStatus.shxReady
 ```
 
 SHx trustlines, payments, and governance voting are next on the roadmap. See the [Roadmap](#roadmap-v100) table above for current status.
