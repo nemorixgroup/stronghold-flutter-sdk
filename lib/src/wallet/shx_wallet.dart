@@ -5,6 +5,7 @@
 library;
 
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+import 'package:stronghold_flutter_sdk/src/asset/shx_asset.dart';
 import 'package:stronghold_flutter_sdk/src/core/stronghold_exception.dart';
 import 'package:stronghold_flutter_sdk/src/wallet/shx_account.dart';
 
@@ -125,5 +126,63 @@ class ShxWallet {
 
     // Only now can the account be considered funded.
     return account.copyWith(status: ShxAccountStatus.funded);
+  }
+
+  // ---- Establish SHx Trustline ----
+
+  /// Opens a trustline from [account] toward the SHx issuer, and
+  /// returns it updated to [ShxAccountStatus.shxReady].
+  ///
+  /// A funded Stellar account still cannot hold SHx until it explicitly
+  /// trusts the issuer; this is the step that closes that gap, using
+  /// the operation already defined in [ShxTrustline.buildEstablishOperation].
+  /// Unlike [createAndFund], the account authorizes this itself: no
+  /// separate funding source is involved, the trustline is paid for out
+  /// of the account's own existing balance (it adds to that account's
+  /// minimum reserve requirement going forward).
+  ///
+  /// See: https://developers.stellar.org/docs/tokens/control-asset-access#trustlines
+  ///
+  /// Example:
+  /// ```dart
+  /// final funded = await ShxWallet.fundOnTestnet(ShxWallet.createPending());
+  /// final ready = await ShxWallet.establishShxTrustline(
+  ///   account: funded,
+  ///   sdk: StellarSDK.TESTNET,
+  ///   network: Network.TESTNET,
+  /// );
+  /// ```
+  ///
+  /// Throws [StrongholdException] if the transaction is not accepted by
+  /// the network (for example, insufficient XLM to cover the added
+  /// reserve).
+  static Future<ShxAccount> establishShxTrustline({
+    required ShxAccount account,
+    required StellarSDK sdk,
+    required Network network,
+  }) async {
+    // Load the account's current sequence number from Horizon.
+    final loadedAccount = await sdk.accounts.account(account.accountId);
+
+    // Build the ChangeTrust operation toward the SHx issuer.
+    final trustOp = ShxTrustline.buildEstablishOperation().build();
+
+    // Build the transaction with the account as its own source, and sign it.
+    final transaction = TransactionBuilder(
+      loadedAccount,
+    ).addOperation(trustOp).build()..sign(account.keyPair, network);
+
+    // Submit to the network and confirm it was accepted.
+    final response = await sdk.submitTransaction(transaction);
+    if (!response.success) {
+      throw StrongholdException(
+        'Failed to establish SHx trustline: '
+        'transaction=${response.extras?.resultCodes?.transactionResultCode}, '
+        'operations=${response.extras?.resultCodes?.operationsResultCodes}',
+      );
+    }
+
+    // Only now can the account be considered SHx-ready.
+    return account.copyWith(status: ShxAccountStatus.shxReady);
   }
 }
