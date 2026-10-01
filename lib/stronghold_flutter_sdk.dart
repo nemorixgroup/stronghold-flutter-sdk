@@ -14,4 +14,5 @@ export 'src/governance/shx_vote.dart';
 
 // -- wallet --
 export 'src/wallet/shx_account.dart';
+export 'src/wallet/shx_balance.dart';
 export 'src/wallet/shx_wallet.dart';
