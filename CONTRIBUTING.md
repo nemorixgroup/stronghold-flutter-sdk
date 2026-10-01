@@ -37,6 +37,11 @@ git checkout develop
 flutter pub get
 ```
 
+**Pre-commit gate:** `scripts/pre_commit.ps1` (Windows/PowerShell) or
+`scripts/pre_commit.sh` (macOS/Linux/bash). Both run the identical
+three checks (format, analyze, test) and must be kept in sync if one
+changes.
+
 **Verify setup:**
 
 ```yaml
