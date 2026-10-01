@@ -40,7 +40,7 @@ Cada decisión de implementación detrás de este SDK, elección de librerías, 
 ```yaml
 # pubspec.yaml
 dependencies:
-  stronghold_flutter_sdk: ^0.0.4-dev
+  stronghold_flutter_sdk: ^0.0.5-dev
 ```
 
 ```yaml
@@ -84,6 +84,21 @@ final ready = await ShxWallet.establishShxTrustline(
   network: Network.PUBLIC,
 );
 // ready.status == ShxAccountStatus.shxReady
+```
+
+Una vez que una cuenta está `shxReady`, podés consultar sus balances:
+
+```dart
+final xlm = await ShxBalance.getXlmBalance(
+  accountId: myAccount.accountId,
+  sdk: StellarSDK.PUBLIC,
+);
+
+final shx = await ShxBalance.getShxBalance(
+  accountId: myAccount.accountId,
+  sdk: StellarSDK.PUBLIC,
+);
+// shx es '0' si la cuenta todavía no tiene trustline de SHx
 ```
 
 Trustlines de SHx, pagos y votación de gobernanza son los próximos pasos del roadmap. Ver la tabla de [Roadmap](#roadmap-v100) más arriba para el estado actual.

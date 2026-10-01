@@ -45,7 +45,7 @@ documented in [docs-sdk/](https://github.com/nemorixgroup/Stronghold-Knowledge-B
 ```yaml
 # pubspec.yaml
 dependencies:
-  stronghold_flutter_sdk: ^0.0.4-dev
+  stronghold_flutter_sdk: ^0.0.5-dev
 ```
 
 ```yaml
@@ -89,6 +89,21 @@ final ready = await ShxWallet.establishShxTrustline(
   network: Network.PUBLIC,
 );
 // ready.status == ShxAccountStatus.shxReady
+```
+
+Once an account is `shxReady`, check its balances:
+
+```dart
+final xlm = await ShxBalance.getXlmBalance(
+  accountId: myAccount.accountId,
+  sdk: StellarSDK.PUBLIC,
+);
+
+final shx = await ShxBalance.getShxBalance(
+  accountId: myAccount.accountId,
+  sdk: StellarSDK.PUBLIC,
+);
+// shx is '0' if the account has no SHx trustline yet
 ```
 
 SHx trustlines, payments, and governance voting are next on the roadmap. See the [Roadmap](#roadmap-v100) table above for current status.

@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.0.5-dev
+
+### Added
+
+- `ShxBalance.getXlmBalance()`: reads an account's native XLM balance
+  from Horizon
+- `ShxBalance.getShxBalance()`: reads an account's SHx balance,
+  matching on asset code and issuer together, not code alone
+
+### Design Decisions
+
+- `ShxBalance` is a separate class from `ShxWallet`, matching the
+  existing `ShxTrustline`/`ShxPayment` split: reading account state
+  and changing its lifecycle are different responsibilities
+- `getShxBalance()` returns `'0'` rather than throwing when no SHx
+  trustline exists, since that is a normal pre-`shxReady` state, not
+  an error condition
+- The non-zero SHx balance path cannot be verified on Testnet, same
+  limitation as `establishShxTrustline()` (the real SHx issuer only
+  exists on Mainnet); covered by a `skip`-marked integration test
+  pending a funded Mainnet test account
+
+### Status
+
+Phase 2 in progress. Identity, Testnet/Mainnet funding, SHx
+trustline, and balance queries are implemented and verified.
+Next: `bootstrapForShx()` (chaining create + fund + trustline), or
+payment integration.
+
 ## 0.0.4-dev
 
 ### Added
