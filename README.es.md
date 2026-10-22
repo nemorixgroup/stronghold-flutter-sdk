@@ -40,21 +40,32 @@ Cada decisión de implementación detrás de este SDK, elección de librerías, 
 ```yaml
 # pubspec.yaml
 dependencies:
-  stronghold_flutter_sdk: ^0.0.5-dev
+  stronghold_flutter_sdk: ^0.0.6-dev
 ```
 
-```yaml
+```bash
 flutter pub get
 ```
 
+## Requisitos
+
+- Flutter 3.32.0 o superior (Dart 3.8.0 o superior)
+- Android, iOS o web
+
+Este paquete solo funciona dentro de una app Flutter. Se apoya en `stellar_flutter_sdk`, que a su vez depende de Flutter, por lo que no se puede usar desde un programa Dart puro (una herramienta de línea de comandos o un servidor Dart). Por la misma razón, los archivos de [`example/`](example/README.md) no se pueden ejecutar con `dart run`; están pensados para copiarse a una app Flutter.
+
+Este paquete reexporta `KeyPair`, `Network` y `StellarSDK` de `stellar_flutter_sdk`. Son los tipos que se pasan a sus métodos principales, así que con un único import de `package:stronghold_flutter_sdk/stronghold_flutter_sdk.dart` alcanza para los fragmentos de más abajo. Para cualquier otra cosa de Stellar, por ejemplo armar tus propias transacciones con los builders de `ShxTrustline` o `ShxPayment`, agregá `stellar_flutter_sdk` a tu propio `pubspec.yaml` e importalo. Si otro paquete que usás define su propio `KeyPair`, ocultá o poné un prefijo a uno de los dos para evitar el choque de nombres.
+
 ## Inicio rápido
 
-Disponible hoy: generar una identidad y fondearla en Testnet, gratis, sin necesidad de XLM real.
+Disponible hoy: onboarding de cuentas (identidad, fondeo en Testnet y Mainnet, trustline de SHx, o todo en una sola llamada) y consulta de balances. Los pasos que solo funcionan en Mainnet están marcados. Los fragmentos se ejecutan dentro de una función async de tu app Flutter, por ejemplo desde el handler de un botón. Hay más ejemplos en [`example/`](example/README.md).
+
+Generar una identidad y fondearla en Testnet, gratis y sin XLM real:
 
 ```dart
 import 'package:stronghold_flutter_sdk/stronghold_flutter_sdk.dart';
 
-Future<void> main() async {
+Future<void> onboardOnTestnet() async {
   // Genera una nueva identidad y la fondea en Testnet vía Friendbot.
   final account = await ShxWallet.fundOnTestnet(ShxWallet.createPending());
 
@@ -75,13 +86,29 @@ final account = await ShxWallet.createAndFund(
 );
 ```
 
-Una vez fondeada, una cuenta necesita una trustline antes de poder tener SHx (esto solo funciona en Mainnet, ya que el issuer real de SHx no existe en Testnet):
+Una vez fondeada, una cuenta necesita una trustline antes de poder tener SHx (solo Mainnet, ya que el issuer real de SHx no existe en Testnet):
 
 ```dart
 final ready = await ShxWallet.establishShxTrustline(
   account: myFundedAccount,
   sdk: StellarSDK.PUBLIC,
   network: Network.PUBLIC,
+);
+// ready.status == ShxAccountStatus.shxReady
+```
+
+Los dos pasos también pueden ocurrir en una sola transacción atómica, de modo que la cuenta nunca queda a medio configurar (solo Mainnet). Las dos claves, la de la fuente de fondeo y la de la cuenta nueva, tienen que firmar en el mismo lugar; si viven en dispositivos distintos, usá los dos pasos separados de arriba. Guardá el secret seed de la cuenta nueva antes de llamarlo: una vez que la cuenta tiene fondos, perder la clave significa perderlos.
+
+```dart
+final pending = ShxWallet.createPending();
+// Guardá pending.keyPair.secretSeed en un lugar seguro ANTES de esta llamada.
+
+final ready = await ShxWallet.bootstrapForShx(
+  account: pending,
+  sdk: StellarSDK.PUBLIC,
+  network: Network.PUBLIC,
+  fundingSourceKeyPair: myFundingKeyPair,
+  startingBalance: '2', // al menos ShxWallet.minimumBootstrapBalance (1.5 XLM)
 );
 // ready.status == ShxAccountStatus.shxReady
 ```
@@ -101,7 +128,7 @@ final shx = await ShxBalance.getShxBalance(
 // shx es '0' si la cuenta todavía no tiene trustline de SHx
 ```
 
-Trustlines de SHx, pagos y votación de gobernanza son los próximos pasos del roadmap. Ver la tabla de [Roadmap](#roadmap-v100) más arriba para el estado actual.
+Pagos de SHx, path payments y votación de gobernanza son los próximos pasos del roadmap. Ver la tabla de [Roadmap](#roadmap-v100) más arriba para el estado actual.
 
 ## Redes
 

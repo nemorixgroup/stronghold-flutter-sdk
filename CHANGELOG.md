@@ -5,6 +5,96 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.0.6-dev
+
+### Added
+
+- `ShxWallet.bootstrapForShx()`: takes a pending `ShxAccount` to
+  `shxReady` in one atomic transaction (create and fund the account,
+  then open its SHx trustline), signed by both the funding source and
+  the new account
+- `ShxWallet.minimumBootstrapBalance`: the minimum starting balance
+  (1.5 XLM) for an account that will hold SHx
+- The package barrel now re-exports `KeyPair`, `Network`, and
+  `StellarSDK` from `stellar_flutter_sdk`, the types callers pass to
+  the main methods
+- Unit tests for the input validation of `bootstrapForShx()` (11
+  tests, no network)
+- 3 tests that import only this package's barrel and fail if one of
+  the re-exports is removed
+- Testnet integration test showing that a failed bootstrap leaves no
+  account behind
+- `example/phase2/shx_bootstrap_example.dart` and `example/README.md`
+
+### Changed
+
+- Every file under `example/` now states that it is illustrative and
+  cannot be run with `dart run` (see Known Limitations)
+- `example/stronghold_flutter_sdk_example.dart` is documentation
+  comments only; it no longer imports or calls the phase examples
+- README.md and README.es.md: new Requirements section (Flutter-only,
+  not usable from pure Dart, what the package re-exports), Quick Start
+  covers `bootstrapForShx()`, and the first snippet is a named
+  function instead of `main()`
+- README install block: `flutter pub get` is now marked as `bash`,
+  not `yaml`
+
+### Fixed
+
+- Examples under `example/phase2/` used `KeyPair`, `StellarSDK`, or
+  `Network` without importing them; those types now come from this
+  package's barrel
+- `shxTruslineExample` renamed to `shxTrustlineExample`
+- Stale text in the example headers: a reference to a docs-sdk page
+  that had been merged into `shx-trustline`, and a "coming in
+  0.0.4-dev" note for a feature that already shipped
+
+### Design Decisions
+
+- One atomic transaction instead of chaining `createAndFund()` and
+  `establishShxTrustline()`: the two steps both happen or neither
+  does, so there is no half-onboarded account on the network. The
+  funding source is the transaction source, so it also pays the fee
+- Both secrets must sign in the same place. When the keys live on
+  different devices (for example, a backend funds and a phone owns the
+  account), `createAndFund()` and `establishShxTrustline()` remain the
+  right tools; `bootstrapForShx()` is the convenience for callers who
+  hold both keys
+- `startingBalance` is required and validated against
+  `minimumBootstrapBalance` before any network call: two base reserves
+  plus one for the trustline, at the current base reserve of 0.5 XLM.
+  There is no default, so the caller chooses the headroom above the
+  minimum. The minimum is a constant, not a Horizon read; the network
+  remains the final authority and rejects an underfunded account
+- The account must be `pending`; any other status fails early with a
+  clear message
+- Only `KeyPair`, `Network`, and `StellarSDK` are re-exported
+  (`export ... show`), not the whole of `stellar_flutter_sdk`: they
+  already appear in the signatures of this package's public methods,
+  and a caller should not need a second dependency to call them. The
+  cost is a possible name clash with another package that defines its
+  own `KeyPair`, solved with `hide` or an import prefix
+
+### Known Limitations
+
+- The success path (a Mainnet account ending `shxReady`) is not yet
+  verified end to end: the real SHx issuer only exists on Mainnet, so
+  that test is marked `skip` pending a funded Mainnet test account.
+  The failure path is verified on Testnet: both signatures are
+  accepted (the network reaches the trustline and fails with
+  `op_no_issuer`, not `tx_bad_auth`) and the account creation is
+  rolled back
+- This package is Flutter-only by inheritance: `stellar_flutter_sdk`
+  depends on Flutter, so it cannot be used from pure Dart, and the
+  examples cannot run with `dart run`. They are meant to be copied
+  into a Flutter app
+
+### Status
+
+Phase 2 in progress. Identity, Testnet/Mainnet funding, SHx
+trustline, balance queries, and one-call bootstrap are implemented.
+Next: SHx payment integration (`0.0.7-dev`). 
+
 ## 0.0.5-dev
 
 ### Added
