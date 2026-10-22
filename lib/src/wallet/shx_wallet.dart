@@ -22,8 +22,29 @@ import 'package:stronghold_flutter_sdk/src/wallet/shx_account.dart';
 /// single opinionated "create account" call, so a developer can enter
 /// at whichever step matches their app's own funding flow (see
 /// `docs-sdk/phase-2/` for the full design rationale).
+///
+/// Example:
+/// ```dart
+/// final pending = ShxWallet.createPending();
+/// final funded = await ShxWallet.fundOnTestnet(pending);
+/// ```
 class ShxWallet {
   ShxWallet._();
+
+  // ---- Constants ----
+
+  /// Minimum starting balance, in XLM, for an account that will hold SHx.
+  ///
+  /// Two base reserves for the account itself plus one for the SHx
+  /// trustline, at today's base reserve of 0.5 XLM each (3 x 0.5 = 1.5).
+  /// The base reserve is set by network vote and may change, so treat
+  /// this as the current value, not a permanent guarantee; Horizon
+  /// remains the final authority and rejects an underfunded account.
+  ///
+  /// See: https://developers.stellar.org/docs/learn/fundamentals/lumens#minimum-balance
+  static const String minimumBootstrapBalance = '1.5';
+
+  // ---- Identity ----
 
   /// Generates a new Stellar keypair. No network call; the account
   /// does not exist on any ledger until it is funded (see
@@ -183,6 +204,113 @@ class ShxWallet {
     }
 
     // Only now can the account be considered SHx-ready.
+    return account.copyWith(status: ShxAccountStatus.shxReady);
+  }
+
+  // ---- Bootstrap (Mainnet) ----
+
+  /// Takes a [ShxAccount] from [ShxAccountStatus.pending] to
+  /// [ShxAccountStatus.shxReady] in a single atomic transaction: it
+  /// creates and funds the account, then opens its SHx trustline.
+  ///
+  /// Both steps travel in one transaction, so they either both happen
+  /// or neither does; there is no half-onboarded state on the network.
+  /// The price of that guarantee is that both secrets must sign in the
+  /// same place: [fundingSourceKeyPair] (which also pays the fee) and
+  /// the new account's own key. When those keys live on different
+  /// devices (for example, a backend funds and a phone owns the
+  /// account), use [createAndFund] and [establishShxTrustline] as
+  /// separate steps instead.
+  ///
+  /// [startingBalance] is required, in XLM, and must be at least
+  /// [minimumBootstrapBalance]. Add headroom on top of that: an account
+  /// holding exactly the minimum has no spendable balance left for later
+  /// transactions, and this SDK does not choose that headroom for you.
+  ///
+  /// This only works against Mainnet: the SHx issuer does not exist on
+  /// Testnet, so the trustline step fails there with `op_no_issuer` and
+  /// the whole transaction is rolled back (see
+  /// `docs-sdk/phase-2/shx-trustline/`).
+  ///
+  /// See: https://developers.stellar.org/docs/learn/fundamentals/transactions/operations-and-transactions
+  ///
+  /// Example:
+  /// ```dart
+  /// final ready = await ShxWallet.bootstrapForShx(
+  ///   account: ShxWallet.createPending(),
+  ///   sdk: StellarSDK.PUBLIC,
+  ///   network: Network.PUBLIC,
+  ///   fundingSourceKeyPair: myFundingKeyPair,
+  ///   startingBalance: '2',
+  /// );
+  /// ```
+  ///
+  /// Throws [StrongholdException] if [account] is not pending, if
+  /// [startingBalance] is not a valid amount or is below
+  /// [minimumBootstrapBalance], or if the network rejects the
+  /// transaction.
+  static Future<ShxAccount> bootstrapForShx({
+    required ShxAccount account,
+    required StellarSDK sdk,
+    required Network network,
+    required KeyPair fundingSourceKeyPair,
+    required String startingBalance,
+  }) async {
+    // Only a pending account can be created; fail early otherwise.
+    if (account.status != ShxAccountStatus.pending) {
+      throw StrongholdException(
+        'bootstrapForShx requires a pending account, '
+        'got ${account.status.name}',
+      );
+    }
+
+    // Reject invalid or underfunded amounts before touching the network.
+    final amount = double.tryParse(startingBalance);
+    if (amount == null ||
+        !amount.isFinite ||
+        amount < double.parse(minimumBootstrapBalance)) {
+      throw StrongholdException(
+        'startingBalance must be a number of at least '
+        '$minimumBootstrapBalance XLM, got "$startingBalance"',
+      );
+    }
+
+    // Load the funding account's current sequence number from Horizon.
+    final fundingAccount = await sdk.accounts.account(
+      fundingSourceKeyPair.accountId,
+    );
+
+    // Operation 1: create and fund the new account (source: the funder).
+    final createAccountOp = CreateAccountOperationBuilder(
+      account.accountId,
+      startingBalance,
+    ).build();
+
+    // Operation 2: open the SHx trustline with the NEW account as its
+    // source; it already exists by then because operations run in order.
+    final trustOp = ShxTrustline.buildEstablishOperation()
+        .setSourceAccount(account.accountId)
+        .build();
+
+    // One transaction, signed by both the funder and the new account.
+    final transaction =
+        TransactionBuilder(
+            fundingAccount,
+          ).addOperation(createAccountOp).addOperation(trustOp).build()
+          ..sign(fundingSourceKeyPair, network)
+          ..sign(account.keyPair, network);
+
+    // Submit; on failure nothing is applied, including the creation.
+    final response = await sdk.submitTransaction(transaction);
+    if (!response.success) {
+      throw StrongholdException(
+        'Failed to bootstrap SHx account: '
+        'transaction=${response.extras?.resultCodes?.transactionResultCode}, '
+        'operations=${response.extras?.resultCodes?.operationsResultCodes}',
+      );
+    }
+
+    // Both steps were applied together, so the account is SHx-ready.
     return account.copyWith(status: ShxAccountStatus.shxReady);
   }
 }

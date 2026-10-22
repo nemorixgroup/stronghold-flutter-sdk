@@ -45,21 +45,32 @@ documented in [docs-sdk/](https://github.com/nemorixgroup/Stronghold-Knowledge-B
 ```yaml
 # pubspec.yaml
 dependencies:
-  stronghold_flutter_sdk: ^0.0.5-dev
+  stronghold_flutter_sdk: ^0.0.6-dev
 ```
 
-```yaml
+```bash
 flutter pub get
 ```
 
+## Requirements
+
+- Flutter 3.32.0 or newer (Dart 3.8.0 or newer)
+- Android, iOS, or web
+
+This package only works inside a Flutter app. It builds on `stellar_flutter_sdk`, which itself depends on Flutter, so it cannot be used from a pure Dart program (a command-line tool or a Dart server). For the same reason, the files under [`example/`](example/README.md) cannot be run with `dart run`; they are meant to be copied into a Flutter app.
+
+This package re-exports `KeyPair`, `Network`, and `StellarSDK` from `stellar_flutter_sdk`. They are the types you pass to its main methods, so a single import of `package:stronghold_flutter_sdk/stronghold_flutter_sdk.dart` is enough for the snippets below. For anything else from Stellar, for example building your own transactions around the operation builders in `ShxTrustline` or `ShxPayment`, add `stellar_flutter_sdk` to your own `pubspec.yaml` and import it. If another package you use defines its own `KeyPair`, hide or prefix one of the two to avoid a name clash.
+
 ## Quick Start
 
-Available today: generating an identity and funding it on Testnet, free, no real XLM required.
+Available today: account onboarding (identity, funding on Testnet and Mainnet, SHx trustline, or all of it in one call) and balance queries. Steps that only work on Mainnet are marked. The snippets run inside an async function of your Flutter app, for example a button handler. More examples live in [`example/`](example/README.md).
+
+Generate an identity and fund it on Testnet, free and with no real XLM:
 
 ```dart
 import 'package:stronghold_flutter_sdk/stronghold_flutter_sdk.dart';
 
-Future<void> main() async {
+Future<void> onboardOnTestnet() async {
   // Generate a new identity and fund it on Testnet via Friendbot.
   final account = await ShxWallet.fundOnTestnet(ShxWallet.createPending());
 
@@ -80,13 +91,29 @@ final account = await ShxWallet.createAndFund(
 );
 ```
 
-Once funded, an account needs a trustline before it can hold SHx (this only works on Mainnet, since the real SHx issuer does not exist on Testnet):
+Once funded, an account needs a trustline before it can hold SHx (Mainnet only, since the real SHx issuer does not exist on Testnet):
 
 ```dart
 final ready = await ShxWallet.establishShxTrustline(
   account: myFundedAccount,
   sdk: StellarSDK.PUBLIC,
   network: Network.PUBLIC,
+);
+// ready.status == ShxAccountStatus.shxReady
+```
+
+Both steps can also happen in one atomic transaction, so the account is never left half set up (Mainnet only). Both secrets, the funding source and the new account, must sign in the same place; if they live on different devices, use the two separate steps above. Save the new account's secret seed before calling it: once the account holds funds, losing the key means losing them.
+
+```dart
+final pending = ShxWallet.createPending();
+// Persist pending.keyPair.secretSeed somewhere safe BEFORE this call.
+
+final ready = await ShxWallet.bootstrapForShx(
+  account: pending,
+  sdk: StellarSDK.PUBLIC,
+  network: Network.PUBLIC,
+  fundingSourceKeyPair: myFundingKeyPair,
+  startingBalance: '2', // at least ShxWallet.minimumBootstrapBalance (1.5 XLM)
 );
 // ready.status == ShxAccountStatus.shxReady
 ```
@@ -106,7 +133,7 @@ final shx = await ShxBalance.getShxBalance(
 // shx is '0' if the account has no SHx trustline yet
 ```
 
-SHx trustlines, payments, and governance voting are next on the roadmap. See the [Roadmap](#roadmap-v100) table above for current status.
+SHx payments, path payments, and governance voting are next on the roadmap. See the [Roadmap](#roadmap-v100) table above for current status.
 
 ## Networks
 

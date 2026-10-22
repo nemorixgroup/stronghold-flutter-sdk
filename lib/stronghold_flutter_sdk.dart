@@ -5,6 +5,8 @@
 /// architecture rationale.
 library;
 
+export 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart'
+    show KeyPair, Network, StellarSDK;
 export 'src/asset/shx_asset.dart';
 export 'src/core/stronghold_exception.dart';
 export 'src/core/stronghold_network.dart';
