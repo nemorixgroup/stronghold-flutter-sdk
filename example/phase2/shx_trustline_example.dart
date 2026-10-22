@@ -9,11 +9,13 @@
 // trustline reserve, a few cents' worth, recoverable by removing the
 // trustline later via ShxTrustline.buildRemoveOperation()).
 //
-// Run with: dart run example/phase2/shx_trustline_example.dart
+// Note: this file is illustrative. stellar_flutter_sdk depends on Flutter, so
+// it cannot run with `dart run`. Copy the function into a Flutter app and
+// call it from there.
 
 import 'package:stronghold_flutter_sdk/stronghold_flutter_sdk.dart';
 
-Future<void> main() async {
+Future<void> shxTrustlineExample() async {
   // Replace with a real, funded Mainnet account's secret seed.
   final myKeyPair = KeyPair.fromSecretSeed('S...');
   final account = ShxAccount(
