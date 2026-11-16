@@ -5,6 +5,92 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.0.7-dev
+
+### Added
+
+- `ShxPayment.send()`: sends SHx from a `shxReady` account to another
+  account, with an optional text memo, and returns the transaction
+  hash. It validates the input, confirms that the destination exists
+  and holds the SHx trustline before spending a fee, signs, and
+  submits once
+- `ShxPayment.maxMemoBytes`: the 28-byte limit of a text memo
+- `ShxPaymentException` and `ShxPaymentErrorCode` (12 codes): typed
+  payment failures, following the `EscrowException` pattern. Five are
+  raised before any network call (`invalidAmount`,
+  `invalidDestination`, `invalidMemo`, `sameAccount`,
+  `sourceNotReady`); the rest map the Stellar result codes
+  (`destinationNotFound`, `destinationNoTrustline`, `insufficientShx`,
+  `insufficientXlmForFee`, `destinationLimitReached`, `rejected`) and
+  the case of no definitive answer (`outcomeUnknown`)
+- `ShxPaymentException.fromResultCodes()`: classifies a failed
+  submission from its Horizon result codes, for callers who build
+  their own payment transactions
+- 66 unit tests, with no network: the input validation of `send()`,
+  the classification of result codes, and a check that the SDK's text
+  memo agrees with the 28-byte UTF-8 limit
+- 12 Testnet integration tests, plus one skipped: destination not
+  found, destination without trustline (and no transaction sent),
+  amounts and memos at their limits, and the locally computed
+  transaction hash against the one Horizon reports
+- `example/phase2/shx_payment_example.dart`
+
+### Changed
+
+- `lib/src/asset/shx_asset.dart` now imports `ShxAccount`;
+  `lib/src/core/stronghold_exception.dart` holds the payment
+  exceptions
+- `example/README.md` and the entry point comments list the payment
+  example
+
+### Design Decisions
+
+- `send()` never retries. Stellar's own error-handling guide warns
+  that resubmitting after `tx_bad_seq` can pay twice, and a lost
+  response can hide a payment that went through. Any exception thrown
+  before submitting means nothing was sent; only `outcomeUnknown`
+  means it may have been applied, and it carries the transaction hash
+  so the caller can look it up. A failure reported without result
+  codes counts as `outcomeUnknown`, not as a rejection
+- The transaction hash is computed locally before submitting and is
+  returned on success; it matches the hash Horizon reports
+- The destination is looked up before sending, so a missing account or
+  trustline costs no fee. The lookup is not atomic with the
+  submission: the network remains the final authority
+- Amounts are parsed exactly into stroops with `BigInt`, not with
+  `double`: plain decimals with up to 7 decimals, above zero, at most
+  922337203685.4775807
+- Only classic `G` addresses are accepted as destinations. Muxed (`M`)
+  and contract (`C`) addresses are rejected: a classic payment cannot
+  go to a contract, and sending SHx to one needs a Soroban call
+- The memo limit is measured in UTF-8 bytes, not characters
+- No error for an unauthorized source or destination: the SHx issuer
+  has `auth_required` off and `auth_immutable` on, so authorization
+  cannot be the reason a payment fails
+- `tx_insufficient_balance` is its own code (`insufficientXlmForFee`):
+  an account holding exactly its minimum XLM cannot pay even the fee,
+  the reason `bootstrapForShx()` asks for headroom above the minimum
+
+### Known Limitations
+
+- A successful SHx payment is not verified end to end: the real SHx
+  issuer only exists on Mainnet, so that test is marked `skip`. Taken
+  together with the trustline, the bootstrap success path, and a
+  non-zero SHx balance, four behaviors now wait for a single pass with
+  a funded Mainnet account
+- The line of `send()` that attaches the memo is not exercised by a
+  test; the SDK calls it makes are
+- Payments to muxed or contract addresses are not supported
+- The examples cannot run with `dart run`; they are meant to be
+  copied into a Flutter app
+
+### Status
+
+Phase 2 in progress. Identity, Testnet/Mainnet funding, SHx
+trustline, balance queries, one-call bootstrap, and SHx payments are
+implemented. Not ready for production use.  
+Next: SHx path payment (`0.0.8-dev`).  
+
 ## 0.0.6-dev
 
 ### Added
