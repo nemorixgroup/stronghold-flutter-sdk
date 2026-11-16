@@ -40,7 +40,7 @@ Cada decisión de implementación detrás de este SDK, elección de librerías, 
 ```yaml
 # pubspec.yaml
 dependencies:
-  stronghold_flutter_sdk: ^0.0.6-dev
+  stronghold_flutter_sdk: ^0.0.7-dev
 ```
 
 ```bash
@@ -58,7 +58,7 @@ Este paquete reexporta `KeyPair`, `Network` y `StellarSDK` de `stellar_flutter_s
 
 ## Inicio rápido
 
-Disponible hoy: onboarding de cuentas (identidad, fondeo en Testnet y Mainnet, trustline de SHx, o todo en una sola llamada) y consulta de balances. Los pasos que solo funcionan en Mainnet están marcados. Los fragmentos se ejecutan dentro de una función async de tu app Flutter, por ejemplo desde el handler de un botón. Hay más ejemplos en [`example/`](example/README.md).
+Disponible hoy: onboarding de cuentas (identidad, fondeo en Testnet y Mainnet, trustline de SHx, o todo en una sola llamada), consulta de balances y pagos de SHx. Los pasos que solo funcionan en Mainnet están marcados. Los fragmentos se ejecutan dentro de una función async de tu app Flutter, por ejemplo desde el handler de un botón. Hay más ejemplos en [`example/`](example/README.md).
 
 Generar una identidad y fondearla en Testnet, gratis y sin XLM real:
 
@@ -128,7 +128,20 @@ final shx = await ShxBalance.getShxBalance(
 // shx es '0' si la cuenta todavía no tiene trustline de SHx
 ```
 
-Pagos de SHx, path payments y votación de gobernanza son los próximos pasos del roadmap. Ver la tabla de [Roadmap](#roadmap-v100) más arriba para el estado actual.
+Una vez que el destinatario también tiene la trustline de SHx, podés enviar SHx (solo Mainnet). El destino se verifica antes de enviar, así que una cuenta inexistente o sin trustline se informa sin gastar un fee. La llamada devuelve el hash de la transacción. Los fallos son una `ShxPaymentException` tipada; el código `ShxPaymentErrorCode.outcomeUnknown` significa que el pago pudo haberse aplicado, así que consultá esa transacción antes de enviar de nuevo, o podés pagar dos veces.
+
+```dart
+final txHash = await ShxPayment.send(
+  source: myShxReadyAccount,
+  destinationAccountId: recipientAccountId, // debe empezar con G
+  amount: '10.5',
+  sdk: StellarSDK.PUBLIC,
+  network: Network.PUBLIC,
+  memo: 'invoice 1042', // opcional, hasta 28 bytes
+);
+```
+
+Path payments de SHx y votación de gobernanza son los próximos pasos del roadmap. Ver la tabla de [Roadmap](#roadmap-v100) más arriba para el estado actual.
 
 ## Redes
 

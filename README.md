@@ -45,7 +45,7 @@ documented in [docs-sdk/](https://github.com/nemorixgroup/Stronghold-Knowledge-B
 ```yaml
 # pubspec.yaml
 dependencies:
-  stronghold_flutter_sdk: ^0.0.6-dev
+  stronghold_flutter_sdk: ^0.0.7-dev
 ```
 
 ```bash
@@ -63,7 +63,7 @@ This package re-exports `KeyPair`, `Network`, and `StellarSDK` from `stellar_flu
 
 ## Quick Start
 
-Available today: account onboarding (identity, funding on Testnet and Mainnet, SHx trustline, or all of it in one call) and balance queries. Steps that only work on Mainnet are marked. The snippets run inside an async function of your Flutter app, for example a button handler. More examples live in [`example/`](example/README.md).
+Available today: account onboarding (identity, funding on Testnet and Mainnet, SHx trustline, or all of it in one call), balance queries, and SHx payments. Steps that only work on Mainnet are marked. The snippets run inside an async function of your Flutter app, for example a button handler. More examples live in [`example/`](example/README.md).
 
 Generate an identity and fund it on Testnet, free and with no real XLM:
 
@@ -133,7 +133,20 @@ final shx = await ShxBalance.getShxBalance(
 // shx is '0' if the account has no SHx trustline yet
 ```
 
-SHx payments, path payments, and governance voting are next on the roadmap. See the [Roadmap](#roadmap-v100) table above for current status.
+Once the recipient also holds the SHx trustline, send SHx (Mainnet only). The destination is checked before sending, so a missing account or trustline is reported without spending a fee. The call returns the transaction hash. Failures are a typed `ShxPaymentException`; the code `ShxPaymentErrorCode.outcomeUnknown` means the payment may have been applied, so look up that transaction before sending again, or you can pay twice.
+
+```dart
+final txHash = await ShxPayment.send(
+  source: myShxReadyAccount,
+  destinationAccountId: recipientAccountId, // must start with G
+  amount: '10.5',
+  sdk: StellarSDK.PUBLIC,
+  network: Network.PUBLIC,
+  memo: 'invoice 1042', // optional, up to 28 bytes
+);
+```
+
+SHx path payments and governance voting are next on the roadmap. See the [Roadmap](#roadmap-v100) table above for current status.
 
 ## Networks
 
