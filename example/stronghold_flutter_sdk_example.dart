@@ -28,13 +28,15 @@
 // | 2 | phase2/shx_trustline_example.dart | Mainnet only | Open a SHx trustline |
 // | 2 | phase2/shx_balance_example.dart | Testnet | Read XLM and SHx balances |
 // | 2 | phase2/shx_bootstrap_example.dart | Mainnet only | Create, fund, and open a SHx trustline atomically |
+// | 2 | [`shx_payment_example.dart`](phase2/shx_payment_example.dart) | Mainnet only | Send SHx with a memo and handle each failure |
+
 //
 // ## Planned examples
 //
 // | Phase | Example | Status |
 // |---|---|---|
+// | 2 | `payment_example.dart`, send a SHx payment | ⏳ Pending |
 // | 2 | mainnet_account_creation_example.dart, create and fund an account on Mainnet | Pending |
-// | 2 | payment_example.dart, send a SHx payment | Pending |
 // | 2 | path_payment_example.dart, cross-asset SHx conversion | Pending |
 // | 3 | governance_vote_example.dart, cast and read back a governance vote | Pending |
 // | 4 | escrow_lock_unlock_example.dart, lock, read, and unlock a SHx escrow | Pending |
